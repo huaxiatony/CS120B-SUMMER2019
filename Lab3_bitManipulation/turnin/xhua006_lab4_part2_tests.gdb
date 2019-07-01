@@ -26,42 +26,93 @@
 echo ======================================================\n
 echo Running all tests..."\n\n
 
-test "[Part-4 PINA:0x00 => PORTB: 0x00 PORTC: 0x00]"
+test "PINA: 0x00, 0x00, 0x00, 0x00 => PORTC: 0x07, state: INIT"
+set state = INIT
 setPINA 0x00
 continue 2
-expectPORTB 0x00
-expectPORTC 0x00
-checkResult
-
-test "[Part-4 PINA:0x12 => PORTB: 0x01 PORTC: 0x20]"
-setPINA 0x12
+setPINA 0x00
 continue 2
-expectPORTB 0x01
-expectPORTC 0x20
+setPINA 0x00
+continue 2
+setPINA 0x00
+continue 2
+expectPORTC 0x07
+expect state INIT
 checkResult
 
-test "[Part-4 PINA:0x03 => PORTB: 0x00 PORTC: 0x30]"
+test "PINA: 0x01, 0x01, 0x01, 0x01 => PORTC: 0x09, state: WAIT"
+set state = INIT
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+expectPORTC 0x09
+expect state WAIT
+checkResult
+
+test "PINA: 0x01, 0x02, 0x01, 0x02 => PORTC: 0x07, state: WAIT"
+set state = INIT
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+expectPORTC 0x07
+expect state WAIT
+checkResult
+
+test "PINA: 0x02, 0x02, 0x02, 0x02 => PORTC: 0x03, state: WAIT"
+set state = INIT
+setPINA 0x02
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x02
+continue 2
+expectPORTC 0x03
+expect state WAIT
+checkResult
+
+test "PINA: 0x03, 0x03, 0x03, 0x03 => PORTC: 0x07, state: RESET"
+set state = INIT
 setPINA 0x03
 continue 2
-expectPORTB 0x00
-expectPORTC 0x30
+setPINA 0x03
+continue 2
+setPINA 0x03
+continue 2
+setPINA 0x03
+continue 2
+expectPORTC 0x07
+expect state RESET
 checkResult
 
-test "[Part-4 PINA:0xFF => PORTB: 0x0F PORTC: 0xF0]"
-setPINA 0xFF
+test "PINA: 0x01, 0x02, 0x02, 0x03 => PORTC: 0x07, state: RESET"
+set state = INIT
+setPINA 0x01
 continue 2
-expectPORTB 0x0F
-expectPORTC 0xF0
+setPINA 0x02
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x03
+continue 2
+expectPORTC 0x07
+expect state RESET
 checkResult
 
-test "[Part-4 PINA:0x45 => PORTB: 0x04 PORTC: 0x50]"
-setPINA 0x45
-continue 2
-expectPORTB 0x04
-expectPORTC 0x50
-checkResult
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed
 eval "shell echo Passed %d/%d tests.\n",$passed,$tests
+
 echo ======================================================\n

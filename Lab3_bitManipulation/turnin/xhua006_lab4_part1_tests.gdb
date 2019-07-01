@@ -26,54 +26,82 @@
 echo ======================================================\n
 echo Running all tests..."\n\n
 
-# Example test:
-test "PINA: 0x00, PINB: 0x00 => PORTC: 0"
-# Set inputs
+test "PINA: 0x00, 0x02 => PORTB: 0x01, state: INIT"
+set state = INIT
 setPINA 0x00
-setPINB 0x00
-# Continue for several ticks
 continue 2
-# Set expect values
-expectPORTC 0
-# Check pass/fail
-checkResult
-
-# Add tests below
-
-test "[Part-1 PINA:0x01, PINB:0x01 => PINC: 0x02]"
-setPINA 0x01
-setPINB 0x01
-continue 2
-expectPORTC 0x02
-checkResult
-
-test "[Part-1 PINA:0x02, PINB:0x01 => PINC: 0x02]"
 setPINA 0x02
-setPINB 0x01
 continue 2
-expectPORTC 0x02
+expectPORTB 0x01
+expect state INIT
 checkResult
 
-test "[Part-1 PINA:0x02, PINB:0x02 => PINC: 0x02]"
-setPINA 0x02
-setPINB 0x02
-continue 2
-expectPORTC 0x02
-checkResult
-
-test "[Part-1 PINA:0x01, PINB:0x02 => PINC: 0x02]"
+test "PINA: 0x01, 0x01 => PORTB: 0x02, state: TURN_OFF"
+set state = INIT
 setPINA 0x01
-setPINB 0x02
 continue 2
-expectPORTC 0x02
+setPINA 0x01
+continue 2
+expectPORTB 0x02
+expect state TURN_OFF
 checkResult
 
-test "[Part-1 PINA:0x03, PINB:0x01 => PINC: 0x03]"
-setPINA 0x03
-setPINB 0x01
+test "PINA: 0x01, 0x00 => PORTB: 0x02, state: WAIT_ONE"
+set state = INIT
+setPINA 0x01
 continue 2
-expectPORTC 0x03
+setPINA 0x00
+continue 2
+expectPORTB 0x02
+expect state WAIT_ONE
 checkResult
+
+test "PINA: 0x01, 0x02, 0x01 => PORTB: 0x01, state: TURN_ON"
+set state = INIT
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x01
+continue 2
+expectPORTB 0x01
+expect state TURN_ON
+checkResult
+
+test "PINA: 0x01, 0x02, 0x01, 0x02 => PORTB: 0x01, state: WAIT_TWO"
+set state = INIT
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+expectPORTB 0x01
+expect state WAIT_TWO
+checkResult
+
+test "PINA: 0x01, 0x02, 0x01, 0x02, 0x01, 0x01  => PORTB: 0x01, state: TURN_OFF"
+set state = INIT
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+expectPORTB 0x02
+expect state TURN_OFF
+checkResult
+
+
+
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed

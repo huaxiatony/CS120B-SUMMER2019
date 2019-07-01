@@ -1,5 +1,5 @@
 /*	Author: xhua006
- *  Partner(s) Name: Zhangzheng Tong
+ *  	Partner(s) Name: Zhangzheng Tong
  *	Lab Section: 
  *	Assignment: Lab #  Exercise #
  *	Exercise Description: [optional - include for your own benefit]
@@ -11,18 +11,42 @@
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #endif
+enum dumbMachine{INIT,LOCK,PAUSE,WAIT,} state;
+//0x01 PRESSED  0x00 NOT PRESSED
+//
+//
 
-int main(void) {
+void Tick(){
+	switch(state){
+		case INIT:{
+		
+		}
+		case  
+		
+
+		case
+		case
+
+		case
+		case
+
+
+
+
+
+}
+
+
+
+int main(void){
     /* Insert DDR and PORT initializations */
-	DDRA = 0x00; PORTA = 0xFF;
-	
+	DDRA = 0x00; PORTA = 0xFF;	
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
-
+	state = INIT;
 	while (1)
 	{
-		PORTB = (PINA & 0xf0) >> 4;
-		PORTC = (PINA & 0x0f) << 4;
+		Tick();
 	}
 	return 1;
 }
