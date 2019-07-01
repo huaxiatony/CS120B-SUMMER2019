@@ -16,7 +16,7 @@ enum dumbMachine{INIT,WAIT,KEY_POUND,KEY_Y,LOCK,PAUSE} state;
 void Tick(){
 	switch(state){
 		case INIT:
-			PORTC = 0x01;
+			//PORTC = 0x01;
 			PORTB = 0x00;
 			if((PINA & 0x04) == 0x04){
 				state = KEY_POUND;
@@ -31,7 +31,7 @@ void Tick(){
 				break;
 			}
 		case WAIT:
-			PORTC = 0x02;
+			//PORTC = 0x02;
 			if((PINA & 0x02) == 0x02){
 				state = KEY_Y;
 				break;
@@ -49,16 +49,16 @@ void Tick(){
 				break;
 			}
 		case KEY_POUND:
-			PORTC = 0x03;
+			//PORTC = 0x03;
 			state = WAIT;
 			break;
 		case KEY_Y:
-			PORTC = 0x04;
+			//PORTC = 0x04;
 			PORTB = 0x01;
 			state = PAUSE;
 			break;
 		case PAUSE:
-			PORTC = 0x05;
+			//PORTC = 0x05;
 			if((PINA & 0x87) == 0x00){
 				state = PAUSE;
 				break;
@@ -68,7 +68,7 @@ void Tick(){
 				break;
 			}
 		case LOCK:
-			PORTC = 0x06;
+			//PORTC = 0x06;
 			PORTB = 0x00;
 			state = INIT;
 			break;
@@ -81,7 +81,7 @@ int main(void){
     /* Insert DDR and PORT initializations */
 	DDRA = 0x00; PORTA = 0xFF;	
 	DDRB = 0xFF; PORTB = 0x00;
-	DDRC = 0xFF; PORTC = 0x00;
+	//DDRC = 0xFF; PORTC = 0x00;
 	state = INIT;
 	while (1)
 	{

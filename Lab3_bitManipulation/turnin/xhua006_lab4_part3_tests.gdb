@@ -36,7 +36,7 @@ setPINA 0x00
 continue 2
 setPINA 0x00
 continue 2
-expectPORTC 0x01
+#expectPORTC 0x01
 expectPORTB 0x00
 expect state INIT
 checkResult
@@ -51,7 +51,7 @@ setPINA 0x00
 continue 2
 setPINA 0x04
 continue 2
-expectPORTC 0x03
+#expectPORTC 0x03
 expectPORTB 0x00
 expect state WAIT
 checkResult
@@ -66,7 +66,7 @@ setPINA 0x80
 continue 2
 setPINA 0x80
 continue 2
-expectPORTC 0x06
+#expectPORTC 0x06
 expectPORTB 0x00
 expect state INIT
 checkResult
@@ -81,7 +81,7 @@ setPINA 0x04
 continue 2
 setPINA 0x02
 continue 2
-expectPORTC 0x04
+#expectPORTC 0x04
 expectPORTB 0x01
 expect state PAUSE
 checkResult
@@ -96,7 +96,7 @@ setPINA 0x02
 continue 2
 setPINA 0x80
 continue 2
-expectPORTC 0x01
+#expectPORTC 0x01
 expectPORTB 0x00
 expect state LOCK
 checkResult
@@ -111,7 +111,7 @@ setPINA 0x08
 continue 2
 setPINA 0x04
 continue 2
-expectPORTC 0x01
+#expectPORTC 0x01
 expectPORTB 0x00
 expect state KEY_POUND
 checkResult
@@ -126,7 +126,7 @@ setPINA 0x02
 continue 2
 setPINA 0x04
 continue 2
-expectPORTC 0x03
+#expectPORTC 0x03
 expectPORTB 0x00
 expect state WAIT
 checkResult
