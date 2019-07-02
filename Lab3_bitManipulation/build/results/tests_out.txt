@@ -1,7 +1,19 @@
-Breakpoint 1 at 0x210: file source/main.c, line 98.
+Breakpoint 1 at 0xe6: file source/main.c, line 20.
 Note: automatically using hardware breakpoints for read-only addresses.
-======================================================
-Running all tests..."
+16	
+17	int main(void){
+18		DDRB = 0xFF;
+19		PORTB =0x00;
+20		while(1){
+21			PORTB = 0x0F;
+22		}
+23	}
+Line number 24 out of range; source/main.c has 23 lines.
+Line number 24 out of range; source/main.c has 23 lines.
+quit
+A debugging session is active.
 
-"PINA: 0x00, 0x00, 0x00, 0x00 => PORTC: 0x01, PORTB: 0x00 state: INIT"..."PINA: 0x00, 0x00, 0x00, 0x04 => PORTC: 0x03, PORTB: 0x00 state: WAIT"..."PINA: 0x00, 0x00, 0x80, 0x80 => PORTC: 0x06, PORTB: 0x00 state: INIT"..."PINA: 0x00, 0x00, 0x04, 0x02 => PORTC: 0x04, PORTB: 0x01 state: PAUSE"..."PINA: 0x00, 0x04, 0x02, 0x80 => PORTC: 0x01, PORTB: 0x00 state: LOCK"..."PINA: 0x04, 0x02, 0x08, 0x04 => PORTC: 0x01, PORTB: 0x00 state: KEY_POUND"..."PINA: 0x04, 0x01, 0x02, 0x04 => PORTC: 0x03, PORTB: 0x00 state: WAIT "..."PINA: 0x04, 0x02, 0x04, 0x00 => PORTB: 0x00 state: WAIT"..."PINA: 0x04, 0x02, 0x04, 0x02 => PORTB: 0x01 state: KEY_Y"..."PINA: 0x00, 0x04, 0x04, 0x02 => PORTB: 0x01 state: PAUSE"..."PINA: 0x02, 0x04, 0x02, 0x04 => PORTB: 0x00 state: KEY_POUND"...======================================================
+	Inferior 1 [Remote target] will be detached.
+
+Quit anyway? (y or n) Detaching from program: /home/csmajs/xhua006/120B/Lab3_bitManipulation/build/objects/main.elf, Remote target
 Quitting: Remote doesn't know how to detach
