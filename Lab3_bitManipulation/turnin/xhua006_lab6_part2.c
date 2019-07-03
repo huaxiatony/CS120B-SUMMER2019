@@ -74,129 +74,104 @@ void TimerSet(unsigned long M)
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-enum States {Start, INIT, INC, DEC, WAIT, RESET}state;
 
+enum dummyMachine {Start, LED1, LED2, LED3, LED4, wait,restart}state;
 void Tick(){
-	switch(state){ //Transitions
+	switch(state){ //transitions
 		case Start:
 		{
-			state = INIT;
+			PORTB = 0x00;
+			state = LED1;
 			break;
 		}
-		
-		case INIT:
-		if((~PINA & 0x03) == 0x01)
+		case LED1:
 		{
-			state = INC; break;
+			if((~PINA&0x01) == 0x01){
+			state = wait; break;
+			}
+			else{
+			state = LED2; break;
+			}
 		}
-		else if((~PINA & 0x03) == 0x02)
+		case LED2:
 		{
-			state = DEC; break;
+			if((~PINA&0x01) == 0x01){		
+				state = wait; break;
+				
+			}
+			else{
+			state = LED3; break;
+			}
 		}
-		else if((~PINA & 0x03) == 0x03)
+		case LED3:
 		{
-			state = RESET; break;
+			if((~PINA&0x01) == 0x01){
+				state = wait; break;
+			}
+			else{
+			state = LED4; break;
+			}
 		}
-		else
+		case LED4:
 		{
-			state = INIT; break;
+			if((~PINA&0x01) == 0x01){
+			state = wait; break;
+			}
+			else{
+			state = LED1; break;
+			}
 		}
-		
-		case INC:
-		state = WAIT;
-		break;
-		
-		case DEC:
-		state = WAIT;
-		break;
-		
-		case WAIT:
-		/*
-		if(((~PINA & 0x03) == 0x01) || ((~PINA & 0x03) == 0x02))
-		{
-			state = WAIT; break;
-		}
-		*/
-		if((~PINA & 0x03) == 0x01){
-			state = DEC;break;
-		}
-		else if((~PINA & 0x03) == 0x02){
-			state = INC;break;
-		}
-		else if((~PINA & 0x03) == 0x03)
-		{
-			state = RESET; break;
-		}
-		else if ((~PINA & 0x03) == 0x00){
-			state = WAIT; break;
-		}
-		else
-		{
-			state = INIT; break;
-		}
-		
-		case RESET:
-		if(((~PINA & 0x03) == 0x01) || ((~PINA & 0x03) == 0x02))
-		{
-			state = RESET; break;
-		}
-		else
-		{
-			state = INIT; break;
-		}
-		
+		case wait:
+			if((~PINA & 0x01) == 0x01)
+			{
+				state = wait; break;
+			}
+			else
+			{
+				state = restart; break;
+			}
+		case restart:
+			if((~PINA & 0x01) == 0x01)
+			{
+				state = LED1; break;
+			}
+			else
+			{
+				state = restart; break;
+			}
 		default:
 		break;
 	}
-	switch(state){ //State actions
-		case Start:
-		{
-			PORTB = 0x07;
-		}
+	switch(state){ 
+		case Start:{
 		break;
-		
-		case INIT:
+		}
+		case LED1:
+		{
+			PORTB = 0x01; break;
+		}
+		case LED2:
+		{
+			PORTB = 0x02; break;
+		}
+		case LED3:
+		{
+			PORTB = 0x04; break;
+		}
+		case LED4:
+		{
+			PORTB = 0x02; break;
+		}
+		default:
 		break;
-		
-		case INC:
-		{
-			if(PORTB >= 0x09)
-			{
-				PORTB = 0x09; break;
-			}
-			else
-			{
-				PORTB = PORTB + 0x01; break;
-			}
-		}
-		
-		case DEC:
-		{
-			if(PORTB <= 0x00)
-			{
-				PORTB = 0x00; break;
-			}
-			else
-			{
-				PORTB = PORTB - 0x01; break;
-			}
-		}
-		
-		case WAIT:
-		break;
-		
-		case RESET:
-		{
-			PORTB = 0x00; break;
-		}
 	}
 }
 
 int main(void)
 {
 	DDRA = 0x00;PORTA = 0xFF;
-	DDRB = 0xFF;PORTB = 0x07;
-	TimerSet(10);
+	DDRB = 0xFF;PORTB = 0x00;
+	TimerSet(50);
 	TimerOn();
 	state = Start;
 	while(1) {
