@@ -75,7 +75,7 @@ void TimerSet(unsigned long M)
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-enum dummyMachine {Start, LED1, LED2, LED3, LED4, wait,restart}state;
+enum dummyMachine {Start, LED1, LED2, LED3}state;
 void Tick(){
 	switch(state){ //transitions
 		case Start:
@@ -86,61 +86,16 @@ void Tick(){
 		}
 		case LED1:
 		{
-			if((~PINA&0x01) == 0x01){
-			state = wait; break;
-			}
-			else{
 			state = LED2; break;
-			}
 		}
 		case LED2:
 		{
-			if((~PINA&0x01) == 0x01){		
-				state = wait; break;
-				
-			}
-			else{
 			state = LED3; break;
-			}
 		}
 		case LED3:
 		{
-			if((~PINA&0x01) == 0x01){
-				state = wait; break;
-			}
-			else{
-			state = LED4; break;
-			}
-		}
-		case LED4:
-		{
-			if((~PINA&0x01) == 0x01){
-			state = wait; break;
-			}
-			else{
 			state = LED1; break;
-			}
 		}
-		case wait:
-			if((~PINA & 0x01) == 0x01)
-			{
-				state = wait; break;
-			}
-			else
-			{
-				state = restart; break;
-			}
-		case restart:
-			if((~PINA & 0x01) == 0x01)
-			{
-				state = LED1; break;
-			}
-			else
-			{
-				state = restart; break;
-			}
-		default:
-		break;
 	}
 	switch(state){ 
 		case Start:{
@@ -158,12 +113,6 @@ void Tick(){
 		{
 			PORTB = 0x04; break;
 		}
-		case LED4:
-		{
-			PORTB = 0x02; break;
-		}
-		default:
-		break;
 	}
 }
 
@@ -171,7 +120,7 @@ int main(void)
 {
 	DDRA = 0x00;PORTA = 0xFF;
 	DDRB = 0xFF;PORTB = 0x00;
-	TimerSet(50);
+	TimerSet(1000);
 	TimerOn();
 	state = Start;
 	while(1) {
@@ -182,3 +131,4 @@ int main(void)
 		// This example just illustrates the use of the ISR and flag
 	}
 }
+
