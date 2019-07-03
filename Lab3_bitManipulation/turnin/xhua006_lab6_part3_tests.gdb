@@ -26,30 +26,53 @@
 echo ======================================================\n
 echo Running all tests..."\n\n
 
-test "cotinue 10 ==>PORTB: 0x01 state: LED1"
+test " ==>PORTB: 0x01 state: LED1"
 set state = Start
-continue 10
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
 expectPORTB 0x01
 expect state LED1
 checkResult
 
-test "cotinue 1010 ==>PORTB: 0x02 state: LED2"
+test "==>PORTB: 0x02 state: LED2"
 set state = Start
-continue 1010
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+
 expectPORTB 0x02
 expect state LED2
 checkResult
 
-test "cotinue 2010 ==>PORTB: 0x04 state: LED3"
+test "==>PORTB: 0x04 state: LED3"
 set state = Start
-continue 2010
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+
 expectPORTB 0x04
 expect state LED3
 checkResult
 
-test "cotinue 3010 ==>PORTB: 0x01 state: LED1"
+test " PINA  ==>PORTB: 0x01 state: LED1"
 set state = Start
-continue 3010
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+
 expectPORTB 0x01
 expect state LED1
 checkResult
