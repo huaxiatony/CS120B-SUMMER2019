@@ -28,6 +28,7 @@ echo Running all tests..."\n\n
 
 test "PINA:0x00,  ==> PORTB: 0x00 state: Start"
 set state = Start
+setPINA 0x00
 continue 2
 expectPORTB 0x00
 expect state Start
@@ -35,6 +36,7 @@ checkResult
 
 test "PINA:0x01  ==> PORTB: 0x01 state: LED1"
 set state = Start
+setPINA 0x01
 continue 2
 expectPORTB 0x01
 expect state LED1
@@ -42,6 +44,9 @@ checkResult
 
 test "PINA:0x01, 0x01 ==> PORTB: 0x02 state: LED2"
 set state = Start
+setPINA 0x01
+continue 2
+setPINA 0x01
 continue 2
 expectPORTB 0x02
 expect state LED2
@@ -49,6 +54,11 @@ checkResult
 
 test "PINA:0x01, 0x01, 0x01 ==> PORTB: 0x04 state: LED3"
 set state = Start
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
 continue 2
 expectPORTB 0x04
 expect state LED3
@@ -56,6 +66,14 @@ checkResult
 
 test "PINA:0x01, 0x01, 0x01, 0x01 ==> PORTB: 0x02 state: LED2"
 set state = Start
+
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
+continue 2
+setPINA 0x01
 continue 2
 expectPORTB 0x02
 expect state LED2
