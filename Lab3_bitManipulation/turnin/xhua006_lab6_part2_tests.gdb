@@ -26,7 +26,7 @@
 echo ======================================================\n
 echo Running all tests..."\n\n
 
-test "PINA:0x00,  ==> PORTB: 0x00 state: Start"
+test "PINA:0x01  ==> PORTB: 0x00 state: Start"
 set state = Start
 setPINA 0x00
 continue 2
@@ -66,7 +66,6 @@ checkResult
 
 test "PINA:0x01, 0x01, 0x01, 0x01 ==> PORTB: 0x02 state: LED2"
 set state = Start
-
 setPINA 0x01
 continue 2
 setPINA 0x01

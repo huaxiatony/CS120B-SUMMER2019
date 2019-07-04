@@ -25,57 +25,90 @@
 
 echo ======================================================\n
 echo Running all tests..."\n\n
-
-test " ==>PORTB: 0x01 state: LED1"
-set state = Start
-setPINA 0x01
+test "PINA: 0x00, 0x00, 0x00, 0x00 => PORTB: 0x07, state: INIT"
+set state = INIT
+setPINA 0x00
 continue 2
-setPINA 0x01
+setPINA 0x00
 continue 2
-setPINA 0x01
+setPINA 0x00
 continue 2
-expectPORTB 0x01
-expect state LED1
+setPINA 0x00
+continue 2
+expectPORTB 0x07
+expect state INIT
 checkResult
 
-test "==>PORTB: 0x02 state: LED2"
-set state = Start
+test "PINA: 0x01, 0x01, 0x01, 0x01 => PORTB: 0x09, state: WAIT"
+set state = INIT
 setPINA 0x01
 continue 2
 setPINA 0x01
 continue 2
 setPINA 0x01
 continue 2
-
-expectPORTB 0x02
-expect state LED2
+setPINA 0x01
+continue 2
+expectPORTB 0x09
+expect state WAIT
 checkResult
 
-test "==>PORTB: 0x04 state: LED3"
-set state = Start
+test "PINA: 0x01, 0x02, 0x01, 0x02 => PORTB: 0x07, state: WAIT"
+set state = INIT
 setPINA 0x01
+continue 2
+setPINA 0x02
 continue 2
 setPINA 0x01
 continue 2
-setPINA 0x01
+setPINA 0x02
 continue 2
-
-expectPORTB 0x04
-expect state LED3
+expectPORTB 0x07
+expect state WAIT
 checkResult
 
-test " PINA  ==>PORTB: 0x01 state: LED1"
-set state = Start
-setPINA 0x01
+test "PINA: 0x02, 0x02, 0x02, 0x02 => PORTB: 0x03, state: WAIT"
+set state = INIT
+setPINA 0x02
 continue 2
-setPINA 0x01
+setPINA 0x02
 continue 2
-setPINA 0x01
+setPINA 0x02
 continue 2
-
-expectPORTB 0x01
-expect state LED1
+setPINA 0x02
+continue 2
+expectPORTB 0x03
+expect state WAIT
 checkResult
+
+test "PINA: 0x03, 0x03, 0x03, 0x03 => PORTB: 0x07, state: RESET"
+set state = INIT
+setPINA 0x03
+continue 2
+setPINA 0x03
+continue 2
+setPINA 0x03
+continue 2
+setPINA 0x03
+continue 2
+expectPORTB 0x07
+expect state RESET
+checkResult
+
+test "PINA: 0x01, 0x02, 0x02, 0x03 => PORTB: 0x07, state: RESET"
+set state = INIT
+setPINA 0x01
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x02
+continue 2
+setPINA 0x03
+continue 2
+expectPORTB 0x07
+expect state RESET
+checkResult
+
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed
