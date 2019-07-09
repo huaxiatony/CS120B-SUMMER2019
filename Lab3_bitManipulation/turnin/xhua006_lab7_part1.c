@@ -9,9 +9,10 @@
  */
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
+#include "io.c"
+#include "io.h"
 // TimerISR() sets this to 1. C programmer should clear to 0.
 volatile unsigned char TimerFlag = 0;
 
@@ -74,95 +75,136 @@ void TimerSet(unsigned long M)
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-
-enum dummyMachine {Start, LED1, LED2, LED3, LED4, wait,restart}state;
+enum States {Start, INIT, INC, DEC, WAIT, RESET}state;
+unsigned char counter = 0;
 void Tick(){
-	switch(state){ //transitions
+	switch(state){ 
 		case Start:
 		{
-			PORTB = 0x00;
-			state = LED1;
+			LCD_Cursor(1);
+			LCD_WriteData('0');
+			state = INIT;
 			break;
 		}
-		case LED1:
+		
+		case INIT:
+		if((~PINA & 0x03) == 0x01)
 		{
-			if((~PINA&0x01) == 0x01){
-			state = wait; break;
-			}
-			else{
-			state = LED2; break;
-			}
+			state = INC; break;
 		}
-		case LED2:
+		else if((~PINA & 0x03) == 0x02)
 		{
-			if((~PINA&0x01) == 0x01){		
-				state = wait; break;
-				
-			}
-			else{
-			state = LED3; break;
-			}
+			state = DEC; break;
 		}
-		case LED3:
+		else if((~PINA & 0x03) == 0x03)
 		{
-			if((~PINA&0x01) == 0x01){
-				state = wait; break;
-			}
-			else{
-			state = LED4; break;
-			}
+			state = RESET; break;
 		}
-		case LED4:
+		else
 		{
-			if((~PINA&0x01) == 0x01){
-			state = wait; break;
-			}
-			else{
-			state = LED1; break;
-			}
+			state = INIT; break;
 		}
-		case wait:
-			if((~PINA & 0x01) == 0x01)
+		
+		case INC:
+		state = WAIT;
+		break;
+		
+		case DEC:
+		state = WAIT;
+		break;
+		
+		case WAIT:
+		if((~PINA & 0x03) == 0x01)
 			{
-				state = wait; break;
+				state = INC; break;
 			}
+			else if((~PINA & 0x03) == 0x02)
+			{
+				state = DEC; break;
+			}
+			else if((~PINA & 0x03) == 0x03)
+			{
+				state = RESET; break;
+			}
+			else if((~PINA & 0x03) == 0x00)
+			{
+				state = INIT; break;
+			}
+			else 
+			{
+				state = WAIT; break;
+			}
+		
+		case RESET:
+		if((~PINA & 0x03) == 0x00)
+		{
+			state = INIT; break;
+		}
 			else
-			{
-				state = restart; break;
-			}
-		case restart:
-			if((~PINA & 0x01) == 0x01)
-			{
-				state = LED1; break;
-			}
-			else
-			{
-				state = restart; break;
-			}
+		{
+			state = RESET; break;
+		}
+		
 		default:
 		break;
 	}
-	switch(state){ 
-		case Start:{
+	
+	
+	
+	switch(state){
+		case Start:
+		{
+		}
 		break;
-		}
-		case LED1:
+		
+		case INIT:
+		break;
+		
+		case INC:
 		{
-			PORTB = 0x01; break;
+			if(counter >= 0x09)
+			{
+				counter = 0x09;
+			}
+			else
+			{
+				counter = counter + 0x01;
+			}
+			LCD_Cursor(1);
+			LCD_WriteData(counter + '0');
+			break;
+			
+			
 		}
-		case LED2:
+		
+		case DEC:
 		{
-			PORTB = 0x02; break;
+			if(counter <= 0x00)
+			{
+				counter = 0x00; 
+			}
+			else
+			{
+				counter = counter - 0x01;
+			
+			}
+			LCD_Cursor(1);
+			LCD_WriteData(counter + '0');
+			break;
+			
 		}
-		case LED3:
+		
+		case WAIT:
+		break;
+		
+		case RESET:
 		{
-			PORTB = 0x04; break;
+			counter = 0; 
+			LCD_Cursor(1);
+			LCD_WriteData(counter + '0');
+			break;
 		}
-		case LED4:
-		{
-			PORTB = 0x02; break;
-		}
-		default:
+		default: 
 		break;
 	}
 }
@@ -170,8 +212,11 @@ void Tick(){
 int main(void)
 {
 	DDRA = 0x00;PORTA = 0xFF;
-	DDRB = 0xFF;PORTB = 0x00;
-	TimerSet(50);
+	//DDRB = 0xFF;PORTB = 0x07;
+	DDRC = 0xFF; PORTC = 0x00;
+	DDRD = 0xFF; PORTD = 0x00;
+	LCD_init();
+	TimerSet(12);
 	TimerOn();
 	state = Start;
 	while(1) {

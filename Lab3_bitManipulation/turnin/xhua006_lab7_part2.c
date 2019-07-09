@@ -9,11 +9,13 @@
  */
 
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
+#include "io.c"
+#include "io.h"
 // TimerISR() sets this to 1. C programmer should clear to 0.
 volatile unsigned char TimerFlag = 0;
+
 
 //Internal variables for mapping AVR's ISR to our cleaner TimerISR model.
 unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 ms.
@@ -74,53 +76,153 @@ void TimerSet(unsigned long M)
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-
-enum dummyMachine {Start, LED1, LED2, LED3}state;
+enum States {Start, LED1, LED2, LED3, CHECK, WAIT,RESET}state;
+unsigned char counter = 0;
+unsigned char msg[7] = "Winner!";
 void Tick(){
-	switch(state){ //transitions
+	switch(state){ 
 		case Start:
 		{
-			PORTB = 0x00;
+			counter = 5;
+			LCD_Cursor(1);
+			LCD_WriteData('5');
 			state = LED1;
 			break;
 		}
+		
 		case LED1:
+		if((~PINA & 0x01) == 0x01)
+		{
+			state = CHECK; break;
+		}
+		else
 		{
 			state = LED2; break;
 		}
+		
 		case LED2:
+		if((~PINA & 0x01) == 0x01)
+		{
+			state = CHECK; break;
+		}
+		else
 		{
 			state = LED3; break;
 		}
+		
 		case LED3:
+		if((~PINA & 0x01) == 0x01)
+		{
+			state = CHECK; break;
+		}
+		else
 		{
 			state = LED1; break;
 		}
-	}
-	switch(state){ 
-		case Start:{
+		
+		case CHECK:
+		state = WAIT;
 		break;
+		
+		case WAIT:
+		if((~PINA & 0x01) == 0x01)
+		{
+			state = WAIT; break;
 		}
+		else
+		{
+			state = RESET; break;
+		}
+		
+		case RESET:
+		if((~PINA & 0x01) == 0x01)
+		{
+			if(counter >= 9)
+			{
+				counter = 5;
+				LCD_ClearScreen();	
+				LCD_Cursor(1);
+				LCD_WriteData('5');
+				}
+				state = LED1;
+				break;	
+			}
+			else
+			{
+				state = RESTART; break;
+			}
+		
+		default:
+		break;
+	}
+	
+	
+	
+	switch(state){
+		case Start:
+		{
+		}
+		break;
+		
 		case LED1:
-		{
-			PORTB = 0x01; break;
-		}
+		PORTB = 0x01;
+		break;
+		
 		case LED2:
-		{
-			PORTB = 0x02; break;
-		}
+		PORTB = 0x02;
+		break;
+		
 		case LED3:
-		{
-			PORTB = 0x04; break;
-		}
+		PORTB = 0x04;
+		break;
+		
+		case CHECK:
+		if(PORTB == 0x02)
+			{
+				counter = counter +1;
+				if(counter >= 9)
+				{
+					LCD_DisplayString(1, msg); 
+					break;
+				}
+				else
+				{
+					LCD_Cursor(1);
+					LCD_WriteData(counter + '0'); 
+					break;
+				}
+			}
+			else
+			{
+				counter = counter -1;
+				if(counter <= 0)
+				{
+					counter = 0;
+				}
+				LCD_Cursor(1);
+				LCD_WriteData(counter + '0'); 
+				break;
+			}
+		
+		case WAIT:
+		break;
+		
+		case RESET:
+		break;
+		
+		default: 
+		break;
 	}
 }
 
 int main(void)
 {
 	DDRA = 0x00;PORTA = 0xFF;
-	DDRB = 0xFF;PORTB = 0x00;
-	TimerSet(1000);
+	DDRB = 0xFF;PORTB = 0x05;
+	DDRC = 0xFF; PORTC = 0x00;
+	DDRD = 0xFF; PORTD = 0x00;
+	LCD_init();
+	TimerSet(30);
 	TimerOn();
 	state = Start;
 	while(1) {
@@ -131,4 +233,3 @@ int main(void)
 		// This example just illustrates the use of the ISR and flag
 	}
 }
-
