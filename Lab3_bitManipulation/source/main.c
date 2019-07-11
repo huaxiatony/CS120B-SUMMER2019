@@ -7,14 +7,10 @@
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
  */
-
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "io.c"
-#include "io.h"
-
-
+//#include "io.c"
+//#include "io.h"
 
 // TimerISR() sets this to 1. C programmer should clear to 0.
 volatile unsigned char TimerFlag = 0;
@@ -22,7 +18,7 @@ volatile unsigned char TimerFlag = 0;
 //Internal variables for mapping AVR's ISR to our cleaner TimerISR model.
 unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 ms.
 unsigned long _avr_timer_cntcurr = 0; // Current internal count of 1 ms ticks
-s
+
 void TimerOn()
 {
 	// AVR timer/counter controller register TCCR1
@@ -79,12 +75,6 @@ void TimerSet(unsigned long M)
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-
-
-
-
-
-
 void set_PWM(double frequency) {
 	// Keeps track of the currently set frequency
 	// Will only update the registers when the frequency
@@ -125,68 +115,240 @@ void PWM_off() {
 double tone[9] = {2610.63, 2930.66, 3290.63, 3490.23, 3920.00, 4400.00, 4930.88, 5230.25,0};
 unsigned char counter = 9;
 unsigned char onFlag = 0;
-enum music{Start,INIT, PLAY, WAIT} state;
+//enum music{Start,INIT, PLAY, WAIT} state;
+enum ThreeLEDsSM{BIT_ZERO, BIT_ONE, BIT_TWO, BIT_ZERO_RE, BIT_ONE_RE, BIT_TWO_RE} state_one;
+unsigned char threeLED = 0x00;
+enum BlinkingLEDSM{BIT_THREE_ON, BIT_THREE_ON_TWO, BIT_THREE_ON_THREE, BIT_THREE_OFF, BIT_THREE_OFF_TWO, BIT_THREE_OFF_THREE} state_two;
+unsigned char blinkingLED = 0x00;
+enum CombineLEDsSM{start,init} state;
 
-void Tick()
-{
-	switch(state)
+enum DummySpeaker{new,in,wait,reset} sound;
+unsigned char playit = 0x00;
+
+void Tick_ONE(){
+	switch(state_one)
 	{
-		case Start:
+		case BIT_ZERO:
 		{
-			state = INIT;
+			state_one = BIT_ONE;
 			break;
 		}
-		case INIT:
+		case BIT_ONE:
 		{
-			if((~PINA & 0x01) == 0x01)
-			{
-				state = PLAY;
-				break;
-			}
-			else
-			{
-				state = INIT;
-				break;
-			}
-		}
-		case PLAY:
-		{
+			state_one = BIT_TWO;
 			break;
 		}
-		case WAIT:
+		case BIT_TWO:
 		{
-			state = PLAY;
+			state_one = BIT_ZERO_RE;
+			break;
+		}
+		
+		case BIT_ZERO_RE:
+		{
+			state_one = BIT_ONE_RE;
+			break;
+		}
+		case BIT_ONE_RE:
+		{
+			state_one = BIT_TWO_RE;
+			break;
+		}
+		case BIT_TWO_RE:
+		{
+			state_one = BIT_ZERO;
+			break;
+		}
+		
+		default:
+			break;
+	}
+	switch(state_one)
+	{
+		case BIT_ZERO:
+		{
+			threeLED = 0x01;
+			break;
+		}
+		case BIT_ONE:
+		{
+			threeLED = 0x02;
+			break;
+		}
+		case BIT_TWO:
+		{
+			threeLED = 0x04;
+			break;
+		}
+		
+		case BIT_ZERO_RE:
+		{
+			threeLED = 0x01;
+			break;
+		}
+		case BIT_ONE_RE:
+		{
+			threeLED = 0x02;
+			break;
+		}
+		case BIT_TWO_RE:
+		{
+			threeLED = 0x04;
+			break;
 		}
 		default:
 			break;
 	}
-	switch(state)
+}
+
+void Tick_TWO(){
+	switch(state_two)
 	{
-		case Start:
-		break;
-		case INIT:
+		case BIT_THREE_ON:
 		{
-			set_PWM(0);
+			state_two = BIT_THREE_ON_TWO;
 			break;
 		}
-		case PLAY:
+		case BIT_THREE_ON_TWO:
 		{
-				if(counter > 0)
-				{
-					set_PWM(tone[counter]);
-					counter--;
-					state = WAIT;
-					break;
-				}
-				
+			state_two = BIT_THREE_ON_THREE;
+			break;
 		}
-		case WAIT:
+		case BIT_THREE_ON_THREE:
 		{
+			state_two = BIT_THREE_OFF;
+			break;
+		}
+		case BIT_THREE_OFF:
+		{
+			state_two = BIT_THREE_OFF_TWO;
+			break;
+		}
+		case BIT_THREE_OFF_TWO:
+		{
+			state_two = BIT_THREE_OFF_THREE;
+			break;
+		}
+		case BIT_THREE_OFF_THREE:
+		{
+			state_two = BIT_THREE_ON;
 			break;
 		}
 		default:
 			break;
-		
+	}
+	
+	switch(state_two)
+	{
+		case BIT_THREE_ON:
+		{
+			blinkingLED = 0x08;
+			break;
+		}
+		case BIT_THREE_ON_TWO:
+		{
+			blinkingLED = 0x08;
+			break;
+		}
+		case BIT_THREE_ON_THREE:
+		{
+			blinkingLED = 0x08;
+			break;
+		}
+		case BIT_THREE_OFF:
+		{
+			blinkingLED = 0x00;
+			break;
+		}
+		case BIT_THREE_OFF_TWO:
+		{
+			blinkingLED = 0x00;
+			break;
+		}
+		case BIT_THREE_OFF_THREE:
+		{
+			blinkingLED = 0x00;
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+void Tick(){
+	switch(state)
+	{
+		case start:
+			state = init;
+			break;
+		case init:
+			state = init;
+			PORTB = (threeLED | blinkingLED); 
+			break;
+	}
+}
+
+void soundPlayer(){
+	switch(sound){
+		case new:
+			sound = init;
+			break;
+		case in:
+			if ((~PINA & 0x07) != 0x00)
+			{
+				sound = wait;
+				break;
+			}
+			else
+			{
+				sound = in;
+				break;
+			}
+			break;
+		case wait:
+			if((~PINA & 0x07) != 0x00)
+			{
+				state = wait; break;
+			}
+			else
+			{
+				state = reset; break;
+			}
+		case reset:
+			sound = in;
+			break;
+		default:
+			break;
+	}
+	
+		switch(sound){
+		case new:
+			break;
+		case in:
+			set_PWM(0);
+			break;
+		case wait:
+			if((~PINA & 0x07) == 0x01)
+			{
+				set_PWM(2610.63);
+				break;
+			}
+			else if((~PINA & 0x07) == 0x02)
+			{
+				set_PWM(2930.66);
+				break;
+			}
+			else if((~PINA & 0x07) == 0x04)
+			{
+				set_PWM(3290.63);
+				break;
+			}
+			break;
+		case reset:
+			set_PWM(0);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -194,16 +356,22 @@ int main(void)
 {
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
-	state = Start;
-	PWM_on();
-	TimerSet(50);
+	TimerSet(40);
 	TimerOn();
+	PWM_on();
+	state_one = BIT_ZERO;
+	state_two = BIT_THREE_ON;
+	state = start;
+	
 	while(1)
 	{
-		
+		Tick_ONE();
+		Tick_TWO();
+		soundPlayer();
 		Tick();
 		while (!TimerFlag);
-        TimerFlag = 0;
-		
+        TimerFlag = 0;	
 	}
+	return 1;
 }
+
