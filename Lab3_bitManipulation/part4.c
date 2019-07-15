@@ -238,10 +238,10 @@ void Tick_TWO(){
 	}
 }
 
-unsigned char frequent = 1;
-unsigned char fcount;
-unsigned char repeat = 100;
-unsigned char rcount;
+unsigned long frequent = 1;
+unsigned long fcount;
+unsigned long repeat = 100;
+unsigned long rcount;
 
 void soundPlayer(){
 	switch(sound){

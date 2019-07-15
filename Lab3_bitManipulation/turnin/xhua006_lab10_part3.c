@@ -34,7 +34,7 @@ void TimerOn()
 	// We want a 1 ms tick. 0.001S * 125,000 ticks/s = 125
 	// So when TCNT1 register equals 125,
 	// ! ms has passed. Thus, we compare to 125.
-	OCR1A = 10;
+	OCR1A = 125;
 	// AVR timer interrupt mask register
 	// bit1: OCIE1A -- enables compare match interrupt
 	TIMSK1 = 0x02;
@@ -238,59 +238,62 @@ void Tick_TWO(){
 	}
 }
 
-unsigned char frequent = 1;
+unsigned char frequent = 2;
+unsigned char repeat = 30;
 unsigned char fcount;
-unsigned char repeat = 100;
 unsigned char rcount;
 
 void soundPlayer(){
 	switch(sound){
 		case new:
 			sound = in;
-			rcount = repeat;
 			break;
 		case in:
-		if ((~PINA & 0x04) == 0x04)
+			if ((~PINA & 0x04) == 0x04)
 			{
 				sound = wait;
 				break;
 			}
-			else 
+			else
 			{
 				sound = in;
 				playit = 0x00;
-				fcount = frequent;
+				//fcount = frequent;
+				//rcount = repeat;
 				break;
 			}
+			break;
 		case wait:
 			sound = reset;
 			playit = 0x10;
-			
-			
-			if((~PINA & 0x04) != 0x04) {
+			/*
+			if(rcount == 0) {
 				sound = in;
 			} else {
 				if (fcount == 0) {
 					sound = reset;
-					fcount = frequent;
 				} else {
 					fcount--;
 				}
+				rcount--;
 			}
+			*/
 			break;
 		case reset:
 			playit = 0x00;
 			sound = in;
-			if((~PINA & 0x04) != 0x04) {
+		/*
+			if(rcount == 0) {
 				sound = in;
 			} else {
 				if (fcount == 0) {
 					sound = wait;
-					fcount = frequent;
 				} else {
 					fcount--;
 				}
+				rcount--;
 			}
+			*/
 			break;
 		default:
 			break;
@@ -300,90 +303,18 @@ void soundPlayer(){
 		case new:
 			break;
 		case in:
+			//count = frequent;
 			break;
 		case wait:
+			
 			break;
 		case reset:
+			//playit = 0x00;
 			break;
 		default:
 			break;
 	}
 }
-
-enum bSM {buttonStart, button1Pressed, button2Pressed, waitforrelease} bstate;
-
-void button(){
-	switch(bstate)
-	{
-		case buttonStart:
-			if((~PINA & 0x01) == 0x01)
-				bstate = button1Pressed;
-			else if((~PINA & 0x02) == 0x02)
-				bstate = button2Pressed;
-			else bstate = buttonStart;
-			break;
-		case button1Pressed:
-			if ((~PINA & 0x01) == 0x01)
-				bstate = waitforrelease;
-			else bstate = button1Pressed;
-			break;
-		case button2Pressed:
-			if ((~PINA & 0x02) == 0x02)
-				bstate = waitforrelease;
-			else bstate = button1Pressed;
-			break;
-		case waitforrelease:
-			if(~PINA == 0)
-				bstate = buttonStart;
-			break;
-		default:
-			bstate = buttonStart;
-			break;
-	}
-	switch(bstate)
-	{
-		case buttonStart:
-			break;
-		case button1Pressed:
-			//if(frequent < 100)
-				frequent+=10;
-			break;
-		case button2Pressed:
-			//if(frequent > 0)
-				frequent-=10;
-			break;
-		case waitforrelease:
-			break;
-		default:
-		break;
-			/*if ((~PINA & 0x01) ==0x01)
-			{
-				
-				if (rcount == 0) {
-					frequent -=50;
-					if(frequent == 0){
-						frequent = 1;
-					}
-					sound = new;
-				} else
-					sound = in;
-			}
-			else if ((~PINA & 0x02) ==0x02){
-				if (rcount == 0) {
-					frequent +=50;
-					if(frequent > 1000){
-						frequent = 1000;
-					}
-					sound = new;
-				} else
-					sound = in;
-			}*/
-			
-	}
-	
-}
-
-
 
 void Tick(){
 	switch(state)
@@ -408,8 +339,8 @@ int main(void)
 	state_one = BIT_ZERO;
 	state_two = BIT_THREE_ON;
 	state = start;
-	unsigned short finalnumber = 500;
-	unsigned short finalcounter = finalnumber;
+	unsigned char finalnumber = 40;
+	unsigned char finalcounter = finalnumber;
 	
 	while(1)
 	{
@@ -421,7 +352,6 @@ int main(void)
 			finalcounter = finalnumber;
 		}
 		soundPlayer();
-		button();
 		Tick();
 		while (!TimerFlag);
         TimerFlag = 0;	
