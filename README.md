@@ -1,5 +1,6 @@
 # EE/<del>CS</del> 120B
 <del>As we all known there is no CS classes offered in UCR.</del>
+I will keep this repo public unless you guys get caught for plagiarism. 
 ### Every computer science student is consider as an electrical engineer.
 
 So here is the brief introduce for this class. 
