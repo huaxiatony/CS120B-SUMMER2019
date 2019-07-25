@@ -4,8 +4,12 @@
  * Created: 7/6/2019 6:36:32 PM
  * Author : Xia Hua
  */ 
+
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "bit.h"
 #include "timer.h"
 #include "scheduler.h"
@@ -16,11 +20,12 @@
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #endif
+
 /*
 Scheduler module
 */ 
-static task task1, task2,task3, task4,task5;
-task *tasks[] = {&task1, &task2, &task3, &task4, &task5};
+static task task1, task2,task3, task4;
+task *tasks[] = {&task1, &task2, &task3, &task4};
 
 /*
 Seven Segment Values
@@ -37,26 +42,30 @@ KeyPad Values
 unsigned int keyPressed = '\0';
 unsigned char playCrusor = 0;
 unsigned char mapTravel = 0;
-char upperMap[4] = {2,8,20,25};
-char lowerMap[2] = {10,15};
-char upperMapReset[4] = {2,8,20,25};
-char lowerMapReset[2] = {10,15};
 
-void lcdMatrix()
+char upperMap[10] = {2,3,4,8,12,20,25,27,29,30};
+char lowerMap[5] = {10,15,17,18,22};
+char upperMapReset[10] = {2,3,4,8,12,20,25,27,29,30};
+char lowerMapReset[5] = {10,15,17,18,22};
+
+
+//char highest;
+/*
+void lcdMatrix()//item has been removed
 {
 	PORTA = 0b11010011;
 	PORTB = 0b00101001;
 }
 
-void sevenSeg()
+void sevenSeg()//item will use for count the highest score
 {
 	 for(int l = 0;l >= 0;l-- )
 	 {
 		 for(int k = 0; k >= 0; k--)
 		 {
-			 for(int j = 4; j >= 0; j--)
+			 for(int j = 0; j < 10; j++)
 			 {
-				 for(int i = 5;i >= 0;i--)
+				 for(int i = 0;i < 10;i++)
 				 {
 					 for(int q = 0;q<=125;q++)
 					 {
@@ -78,14 +87,37 @@ void sevenSeg()
 		 }
 	 }
 }
+*/
 
-void customLCD()
+/*
+void displaySeg()
+{
+	 for(int l = 0;l >= 0;l-- )
+	 {
+		 for(int k = 0; k >= 0; k--)
+		 {
+			 for(int j = 0; j >= 0; j--)
+			 {
+				 for(int i = 0;i >= 0;i--)
+				 {
+						 PORTB = seg_code[mapTravel/10];
+						 PORTD = ~SegThree;
+						 PORTB = seg_code[mapTravel%10];
+						 PORTD = ~SegFour;
+					 }
+				 }
+			 }
+		 }
+	 }
+*/
+
+void customLCD()//custom character
 {
 	char i;
 	//Custom character dictionary
 	unsigned char Character1[8] = { 4, 10, 5, 31, 20, 6, 10, 18 };  //the character icon
 	unsigned char Character2[8] = { 31, 31, 31, 31, 31, 31, 31, 31 }; //the block icon
-	unsigned char Character3[8] = { 0x04, 0x0E, 0x0E, 0x0E, 0x1F, 0x00, 0x04, 0x00 }; //undefined
+	unsigned char Character3[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //undefined
 	unsigned char Character4[8] = { 0x01, 0x03, 0x07, 0x1F, 0x1F, 0x07, 0x03, 0x01 }; //undefined
 	unsigned char Character5[8] = { 4, 4, 14, 21, 31, 14, 10, 21}; //the boss icon
 	unsigned char Character6[8] = { 31, 21, 21, 31, 17, 21, 31,0 }; // the monster icon 
@@ -102,19 +134,10 @@ void customLCD()
 	LCD_Custom_Char(5, Character6);  /* Build Character6 at position 5 */
 	LCD_Custom_Char(6, Character7);  /* Build Character6 at position 6 */
 	LCD_Custom_Char(7, Character8);  /* Build Character6 at position 7 */
-
-	LCD_Command(0x80);		/*cursor at home position */
-	LCD_String("Side Scroller!!!");
-	LCD_Command(0xc0);
-	LCD_Char(0);
-	LCD_Char(1);
-	LCD_Char(4);
-	LCD_Char(4);
-
-	LCD_String("Press*Start");	
 }
 
-void crusorAt(unsigned char row, unsigned char col){
+void crusorAt(unsigned char row, unsigned char col)//element to find the cursor
+{
 	if(row == 1){
 		if(col <= 16){
 			LCD_Cursor(col+1);
@@ -127,104 +150,154 @@ void crusorAt(unsigned char row, unsigned char col){
 	}
 }
 
-enum gameStage {start, wait, gamePress,gameRelease,win,lose}; //This is the main game function
-int gameTick(int state){
+enum gameStage {start, wait, gamePress, gameRelease, win, lose}; //This is the main game function
+int gameTick(int state)
+{
 	unsigned char i = 0;
 	int previousState = state;
 	switch(state)
 	{
 		case start:
-		state = wait;
-		break;
+			state = wait;
+			break;
 		case wait:
-		if (keyPressed == '*'){
-			state = gamePress;
-		}
-		else{
-			state = wait;
-		}
-		break;
-		case gamePress:
-		if (keyPressed != '*'){
-			state = gameRelease;
-		}
-		else{
-			state = gamePress;
-		}
-		break;
-		case gameRelease:
-		if (keyPressed == '*'){
-			state = wait;
-		}
-		else{
-			if(mapTravel >= 30){
-				state = win;
+			if (keyPressed == '#'){
+				state = gamePress;
 			}
 			else{
-				for(i=0 ; i<4 ;i++){
-					if(playCrusor == 1 && upperMap[i]+1==1){
-						state = lose;
-					}
+				state = wait;
+			}
+			break;
+		case gamePress:
+			if (keyPressed != '#'){
+				state = gameRelease;
+			}
+			else{
+				state = gamePress;
+			}
+			break;
+		case gameRelease:
+			if (keyPressed == '#'){
+				state = wait;
+			}
+			else{
+				if(mapTravel >= 30){
+					state = win;
 				}
-				for (i =0; i<2;i++){
-					if(playCrusor == 17 && lowerMap[i]+17==17){
-						state = lose;
+				else{
+					for(i=0 ; i<10 ;i++){
+						if(playCrusor == 1 && upperMap[i]+1==1){
+							state = lose;
+						}
+					}
+					for (i =0; i<5;i++){
+						if(playCrusor == 17 && lowerMap[i]+17==17){
+							state = lose;
+						}
 					}
 				}
 			}
-		}
-		break;
+			break;
 		case win:
-		if(keyPressed == '*'){
-			state = wait;
-		}
-		else{
-			state =win;
-		}
-		break;
+			if(keyPressed == '#'){
+				state = wait;
+			}
+			else{
+				state = win;
+			}
+			break;
 		case lose:
-		if(keyPressed == '*'){
-			state = wait;
-		}
-		else{
-			state =lose;
-		}
-		break;
+			if(keyPressed == '#'){
+				state = wait;
+			}
+			else{
+				state =lose;
+			}
+			break;
 		default:
-		break;
+			break;
 	}
 	
 	switch(state){
 		case start:
-		break;
+			break;
 		case wait:
-		playCrusor = 17;
-		memcpy (upperMap, upperMapReset, sizeof (upperMap));
-		memcpy (lowerMap, lowerMapReset, sizeof (lowerMap));
-		if(previousState != wait){
-			LCD_DisplayString(1, "START  Press * to play!");
-		}
-		break;
+			playCrusor = 17;
+			memcpy(upperMap, upperMapReset, sizeof (upperMap));
+			memcpy(lowerMap, lowerMapReset, sizeof (lowerMap));
+			if(previousState != wait){
+				LCD_DisplayString(1, "Press # START!  Use CD to move");
+				//LCD_Command(0xC0);
+				LCD_Char(0);LCD_Char(2);
+				//LCD_Char(2);LCD_Char(4);LCD_Char(5);LCD_Char(4);LCD_Char(5);LCD_Char(4);
+				//LCD_Char(5);LCD_Char(4);LCD_Char(7);LCD_Char(7);LCD_Char(7);LCD_Char(7);LCD_Char(7);LCD_Char(7);
+			}
+			//EEPROM USEAGE
+			char highest = eeprom_read_byte((uint8_t*)1)+eeprom_read_byte((uint8_t*)10)*10;
+			for(int c = 0; c < 250;c++){
+				PORTB = seg_code[highest/10];
+				PORTD = ~SegThree;
+				_delay_ms(1);
+				PORTB = seg_code[highest%10];
+				PORTD = ~SegFour;
+			}
+			PORTB = 0;
+			break;
 		case gamePress:
-		break;
+			break;
 		case gameRelease:
-		break;
+			break;
+
 		case win:
-		LCD_DisplayString(1, "GAME WIN        your score is:");
-		LCD_Cursor(31);
-		LCD_WriteData(mapScrollCount/10+'0');
-		LCD_Cursor(32);
-		LCD_WriteData(mapScrollCount%10+'0');
-		break;
+			if(previousState != win){
+				LCD_DisplayString(1, "YOU WIN!        Your score is:");
+				LCD_Cursor(31);
+				LCD_WriteData(mapTravel/10+'0');
+				LCD_Cursor(32);
+				LCD_WriteData(mapTravel%10+'0');
+				//Seven Segment Display
+				for(int p = 0 ; p <2000; p++){
+					PORTB = seg_code[mapTravel/10];
+					PORTD = ~SegThree;
+					_delay_ms(1);
+					PORTB = seg_code[mapTravel%10];
+					PORTD = ~SegFour;
+				}
+				PORTB = 0;
+				//EEPROM WRITE
+				if(mapTravel > highest)
+				{
+					eeprom_write_byte((uint8_t*)10,mapTravel/10);
+					eeprom_write_byte((uint8_t*)1,mapTravel%10);
+				}
+				 //  write the byte 64 to location 1 of the EEPROM 
+			}
+			break;
+
 		case lose:
-		LCD_DisplayString(1, "GAME OVER       your score is:");
-		LCD_Cursor(31);
-		LCD_WriteData(mapScrollCount/10+'0');
-		LCD_Cursor(32);
-		LCD_WriteData(mapScrollCount%10+'0');
-		break;
+			if(previousState != lose){
+				LCD_DisplayString(1, "GAME OVER!      Your score is:");
+				LCD_Cursor(31);
+				LCD_WriteData(mapTravel/10+'0');
+				LCD_Cursor(32);
+				LCD_WriteData(mapTravel%10+'0');
+				for(int q = 0 ; q <2000; q++){
+					PORTB = seg_code[mapTravel/10];
+					PORTD = ~SegThree;
+					_delay_ms(1);
+					PORTB = seg_code[mapTravel%10];
+					PORTD = ~SegFour;
+				}
+				PORTB = 0;
+				if(mapTravel > highest)
+				{
+					eeprom_write_byte((uint8_t*)10,mapTravel/10);
+					eeprom_write_byte((uint8_t*)1,mapTravel%10);
+				} //  write the byte 64 to location 1 of the EEPROM 
+			}
+			break;
 		default:
-		break;
+			break;
 	}
 	return state;
 }
@@ -258,26 +331,35 @@ int mapTick(int state){
 			break;
 		case mapmove:
 			LCD_ClearScreen();
-			for(i = 0; i < 4; i++){
+			for(i = 0; i < 10; i++){
 				upperMap[i]--;
 			}
-			for(i = 0; i < 2; i++){
+			for(i = 0; i < 5; i++){
 				lowerMap[i]--;
 			}
-			mapTravel++;
-			
-			for(i=0;i<4;i++){
+
+			mapTravel++; 
+
+			for(i=0;i<10;i++){
 				if(upperMap[i] <= 16){
-					cursorAt(1,upperMap[i]);
-					LCD_WriteData('A');
+					crusorAt(1, upperMap[i]);
+					LCD_Char(4);
+					if(i == 9){
+						LCD_Char(7);
+						LCD_Char(7);
+						LCD_Char(7);
+						LCD_Char(7);
+					}
 				}
 			}
-			for(i=0; i <2;i++){
-				if(lowerMap[i]<=16){
-					cursorAt(2.lowerMap[i]);
-					LCD_WriteData('A');
+					
+			for(i=0; i <5;i++){
+				if(lowerMap[i] <=16){
+					crusorAt(2, lowerMap[i]);
+					LCD_Char(4);
 				}
 			}
+					
 			break;
 		default:
 			break;
@@ -290,48 +372,47 @@ int keypadTick(int state){
 	keyPressed = GetKeypadKey();
 	switch(state){
 		case keypadwait:
-		if(keyPressed == '\0'){
-			state = keypadwait;
-		}
-		else{
-			state = keypadpress;
-		}
-		break;
+			if(keyPressed == '\0'){
+				state = keypadwait;
+			}
+			else{
+				state = keypadpress;
+			}
+			break;
 		case keypadpress:
-		state = keypadrelease;
-		break;
-		case keypadrelease:
-		if(keyPressed = '\0'){
-			state = keypadwait;
-		}
-		else{
 			state = keypadrelease;
-		}
-		break;
+			break;
+		case keypadrelease:
+			if(keyPressed == '\0'){
+				state = keypadwait;
+			}
+			else{
+				state = keypadrelease;
+			}
+			break;
 		default:
 		break;
 	}
 	
 	switch(state){
 		case keypadwait:
-		break;
+			break;
 		case keypadpress:
-		if(keyPressed == 'A'){
-			if(playCrusor == 17){
-				playCrusor = 1;
+			if(keyPressed == 'C'){
+				if(playCrusor == 17){
+					playCrusor = 1;
+				}
 			}
-		}
-		else if(keyPressed == 'B'){
-			if(playCrusor == 1){
-				playCrusor = 17;
+			else if(keyPressed == 'D'){
+				if(playCrusor == 1){
+					playCrusor = 17;
+				}
 			}
-		}
-		break;
+			break;
 		case keypadrelease:
-		break;
-		break;
+			break;
 		default:
-		break;
+			break;
 	}
 	return state;
 }
@@ -364,15 +445,29 @@ int finalTick(int state){
 		case finalwait:
 			break;
 		case finalplayer:
-			LCD_Cursor(playerPos);
+			LCD_Cursor(playCrusor);
 			LCD_WriteCommand(0x0C);
-			LCD_WriteData('G');
+			LCD_Char(0);
 			break;
 		default:
 			break;
 	}
 	return state;
 }
+
+/*
+enum fourdigitStage{fourdigitwait};
+int fourdigitTick(int state){
+	switch(state){
+		case fourdigitwait:
+			
+			break;
+		default:
+			break;
+	}
+return state;
+};
+*/
 
 int main() {
 	/* Configure the ports as output */
@@ -382,7 +477,10 @@ int main() {
 	DDRD = 0xFF; PORTD = 0x00; // LCD Control Signal for PD5,6,7. Also, 7 Segment Matrix digit control. Maybe Data Output?	
 	
 	customLCD(); // This is the Welcome screen.
+	LCD_init();
+	LCD_ClearScreen();
 	const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
+
 	/*
 	Task doing state
 	*/
@@ -391,28 +489,28 @@ int main() {
 	task1.elapsedTime = task1.period;
 	task1.TickFct = &gameTick;
 	
-	task2.state = mapWait;
-	task2.period =100;
+	task2.state = mapwait;
+	task2.period = 300;
 	task2.elapsedTime = task2.period;
 	task2.TickFct = &mapTick;
 	
-	task3.state = playerWait;
-	task3.period =10;
+	task3.state = keypadwait;
+	task3.period = 10;
 	task3.elapsedTime = task3.period;
 	task3.TickFct = &keypadTick;
 	
-	task4.state = printPlayer;
-	task4.period =10;
+	task4.state = finalwait;
+	task4.period = 10;
 	task4.elapsedTime = task4.period;
-	task4.TickFct = &playerPrintTick;
+	task4.TickFct = &finalTick;
 
 	/*
-	task5.state = lightWait;
-	task5.period =100;
+	task5.state = fourdigitwait;
+	task5.period = 10;
 	task5.elapsedTime = task5.period;
-	task5.TickFct = &lightTick;
+	task5.TickFct = &fourdigitTick;
 	*/
-	
+
 	/*
 	GCD function 
 	*/
@@ -420,18 +518,19 @@ int main() {
 	for(int i = 1;i <numTasks; i++){
 		GCD = findGCD(GCD,tasks[i]->period);
 	}
-	TimerSet(GCD);
+	TimerSet(1);
 	TimerOn();
 	
 	unsigned short i;
 	
 	while (1)
 	{
-		sevenSeg();
+		//sevenSeg();
 		//lcdMatrix();	
 		/*
 		Something Common
 		*/
+
 		for(i = 0; i < numTasks; i++){
 			if(tasks[i]->elapsedTime == tasks[i]->period)
 			{
@@ -442,6 +541,7 @@ int main() {
 		}
 			while(!TimerFlag);
 			TimerFlag = 0;
+	
 	}
 	return 1;
 }
