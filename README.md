@@ -11,6 +11,7 @@ Yes! This is 120B! A class for weebs.
 ### You will type these command everyday! Trust me copy it down!
 ## Recommand all Windows user use:
 ssh -v -X YOUR_NET_ID@bolt.cs.ucr.edu
+
 ssh -v -X wch136-18
 
 ## This is how you create your first workspace
@@ -18,6 +19,7 @@ ssh -v -X wch136-18
 
 ## EXAMPLE_FOR_LAB NAME
 Lab2_introToAVR
+
 Lab3_bitManipulation
 
 avrdude -c atmelice_isp -p atmega1284 -U hfuse:w:0xD9:m
@@ -30,15 +32,19 @@ avr-gcc -mmcu=atmega1284 -Wall -o build/objects/main.elf source/main.c
 
 ## Homework Submission Format
 cp source/main.c turnin/YOUR_NET_ID_lab11_part1.c
+
 cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part1_tests.gdb
 
 cp source/main.c turnin/YOUR_NET_ID_lab11_part2.c
+
 cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part2_tests.gdb
 
 cp source/main.c turnin/YOUR_NET_ID_lab11_part3.c
+
 cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part3_tests.gdb
 
 cp source/main.c turnin/YOUR_NET_ID_lab11_part4.c
+
 cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part4_tests.gdb
 
 tar -czvf YOUR_NET_ID_lab11.tgz turnin/
