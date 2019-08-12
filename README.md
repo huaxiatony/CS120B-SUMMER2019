@@ -29,16 +29,16 @@ avr-gcc -mmcu=atmega1284 -I/usr/csshare/src/simavr/ -Iheader/ -D_SIMULATE_ -Wall
 avr-gcc -mmcu=atmega1284 -Wall -o build/objects/main.elf source/main.c
 
 ## Homework Submission Format
-cp source/main.c turnin/xhua006_lab11_part1.c
-cp test/tests.gdb turnin/xhua006_lab11_part1_tests.gdb
+cp source/main.c turnin/YOUR_NET_ID_lab11_part1.c
+cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part1_tests.gdb
 
-cp source/main.c turnin/xhua006_lab11_part2.c
-cp test/tests.gdb turnin/xhua006_lab11_part2_tests.gdb
+cp source/main.c turnin/YOUR_NET_ID_lab11_part2.c
+cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part2_tests.gdb
 
-cp source/main.c turnin/xhua006_lab11_part3.c
-cp test/tests.gdb turnin/xhua006_lab11_part3_tests.gdb
+cp source/main.c turnin/YOUR_NET_ID_lab11_part3.c
+cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part3_tests.gdb
 
-cp source/main.c turnin/xhua006_lab11_part4.c
-cp test/tests.gdb turnin/xhua006_lab11_part4_tests.gdb
+cp source/main.c turnin/YOUR_NET_ID_lab11_part4.c
+cp test/tests.gdb turnin/YOUR_NET_ID_lab11_part4_tests.gdb
 
-tar -czvf xhua006_lab11.tgz turnin/
+tar -czvf YOUR_NET_ID_lab11.tgz turnin/
